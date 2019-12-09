@@ -116,7 +116,7 @@ for index ,(train_index,test_index) in enumerate(skf.split(X , y)): #训练数�
     print("train_index_% = ", len(train_index)/len(X))
     train_x, test_x, train_y, test_y = X[train_index], X[test_index], y[
         train_index], y[test_index]
-    print("start xgboost")
+    print("start train")
     if cnt%2 != 0:
         print("model_xgboost")
         model = XGBClassifier(
@@ -169,7 +169,7 @@ for index ,(train_index,test_index) in enumerate(skf.split(X , y)): #训练数�
                                reg_alpha=3,
                                reg_lambda=5,
                                seed=1000,
-                               n_jobs=4,
+                               # n_jobs=4,
                                silent=True
                                )
         # 建议使用CV的方式训练预测。
