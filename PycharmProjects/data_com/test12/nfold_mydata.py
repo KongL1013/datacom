@@ -84,6 +84,35 @@ data=data.drop(['follow_topic','inter_topic','topic','title_t1','title_t2','desc
 
 print(len(data)-1141683)
 
+
+# X = data[:2593669].drop(['label'], axis=1).values
+X = data.drop(['label'], axis=1).values
+print("load model from file")
+loaded_model1 = pickle.load(open("model_xgboost1.pickle.dat", "rb"))
+total_xg_pred1 = loaded_model1.predict_proba(X)
+loaded_model2 = pickle.load(open("model_xgboost2.pickle.dat", "rb"))
+total_xg_pred2 = loaded_model1.predict_proba(X)
+total_xg_pred_1 = pd.DataFrame(total_xg_pred1[:,1],columns=['xg_pred1'])
+total_xg_pred_2 = pd.DataFrame(total_xg_pred2[:,1],columns=['xg_pred2'])
+
+data = pd.concat([data,total_xg_pred_1],axis=1)
+data = pd.concat([data,total_xg_pred_2],axis=1)
+print(data.head())
+
+print("start lgb merge")
+loaded_model_bgm1 = pickle.load(open("LGBMClassifier1.pickle.dat", "rb"))
+total_bgm_pred1 = loaded_model_bgm1.predict_proba(X)
+loaded_model_bgm2 = pickle.load(open("LGBMClassifier1.pickle.dat", "rb"))
+total_bgm_pred2 = loaded_model_bgm2.predict_proba(X)
+total_bgm_pred_1 = pd.DataFrame(total_bgm_pred1[:,1],columns=['bgm_pred1'])
+total_bgm_pred_2 = pd.DataFrame(total_bgm_pred2[:,1],columns=['bgm_pred2'])
+data = pd.concat([data,total_bgm_pred_1],axis=1)
+data = pd.concat([data,total_bgm_pred_2],axis=1)
+print(data.head())
+
+
+
+
 from lightgbm import LGBMClassifier
 from sklearn.model_selection import train_test_split
 # 划分训练集和测试集
@@ -122,7 +151,7 @@ for index ,(train_index,test_index) in enumerate(skf.split(X , y)): #训练数�
         model = XGBClassifier(
             max_depth=10,
             learning_rate=0.01,
-            n_estimators=2000,
+            n_estimators=5,
             min_child_weight=5,  # 5
             max_delta_step=0,
             subsample=0.8,
@@ -145,13 +174,13 @@ for index ,(train_index,test_index) in enumerate(skf.split(X , y)): #训练数�
                           # categorical_feature=[15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29],
                           early_stopping_rounds=50)
         print("save {} model!!!".format(cnt))
-        pickle.dump(model, open("model_xgboost{}.pickle.dat".format(cnt), "wb"))
+        pickle.dump(model, open("mydata_model_xgboost{}.pickle.dat".format(cnt), "wb"))
     else:
         print("LGBMClassifier")
         model = LGBMClassifier(boosting_type='gbdt',
                                task='train',
                                num_leaves=2 ** 9 - 1,
-                               num_iterations=2000,
+                               num_iterations=5,
                                learning_rate=0.01,
                                n_estimators=2000,
                                max_bin=425,
@@ -181,7 +210,7 @@ for index ,(train_index,test_index) in enumerate(skf.split(X , y)): #训练数�
                   # categorical_feature=[15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29],
                   early_stopping_rounds=50)
         print("save {} model!!!".format(cnt))
-        pickle.dump(model, open("LGBMClassifier{}.pickle.dat".format(cnt), "wb"))
+        pickle.dump(model, open("mydata_LGBMClassifier{}.pickle.dat".format(cnt), "wb"))
 
     gc.collect()  # 垃圾清理，内存清理
 
@@ -255,5 +284,5 @@ print(len(test))
 result_append = test[['问题id', '用户id', '邀请创建时间']]
 result_append['Score'] = y_pred[:, 1]
 print(result_append.head())
-result_append.to_csv('result_xg_lg.txt', header=False, index=False, sep='\t')
+result_append.to_csv('my_data_result_xg_lg.txt', header=False, index=False, sep='\t')
 
