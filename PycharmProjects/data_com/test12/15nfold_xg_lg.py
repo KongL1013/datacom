@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
 
 import lightgbm as lgb
 import pickle
@@ -12,21 +10,18 @@ from sklearn.model_selection import train_test_split
 import seaborn as sns
 
 
-# In[2]:
-
 
 pd.set_option('display.max_columns', None)
 
 
-# In[3]:
-
-
-with open('train11.pkl', 'rb') as file:
+with open('train15.pkl', 'rb') as file:
     data = pickle.load(file)
 
+print(data.head())
 
-# In[4]:
+data=data.drop(['u_topic_0_c','u_topic_0_d','u_topic_0_z','u_topic_1_c','u_topic_1_d','u_topic_1_z', 'u_topic_ans_c','u_topic_ans_d','u_topic_ans_z'],axis=1)
 
+data=data.drop(['topic','follow_topic','inter_topic','topic_n'],axis=1)
 
 def fill_null(data, col, null_value):
     use_avg = data[data[col] != null_value][col].mean()
@@ -37,84 +32,75 @@ def fill_null_nan(data, col, null_value):
     data.loc[data[col] == null_value, col] = use_avg
     return data
 
-
-# In[5]:
-
-
-with open('train10.pkl', 'rb') as file:
-    data1 = pickle.load(file)
-
-
-print(len(data1),len(data))
-
+# def fill_null(data, col, null_value):
+#     use_avg = data[data[col] != null_value][col].mean()
+#     data.loc[data[col] == null_value, col] = use_avg
+#     return data
+# def fill_null_nan(data, col, null_value):
+#     use_avg = np.nan
+#     data.loc[data[col] == null_value, col] = use_avg
+#     return data
 
 
-data['topic_sim0_max']=data1['topic_sim0'].apply(lambda x:x[0])
-data['topic_sim0_avg']=data1['topic_sim0'].apply(lambda x:x[1])
-data['topic_sim0_min']=data1['topic_sim0'].apply(lambda x:x[2])
-data['topic_sim0_std']=data1['topic_sim0'].apply(lambda x:x[3])
-data['topic_sim0_num']=data1['topic_sim0'].apply(lambda x:x[4])
 
-data['topic_sim1_max']=data1['topic_sim1'].apply(lambda x:x[0])
-data['topic_sim1_avg']=data1['topic_sim1'].apply(lambda x:x[1])
-data['topic_sim1_min']=data1['topic_sim1'].apply(lambda x:x[2])
-data['topic_sim1_std']=data1['topic_sim1'].apply(lambda x:x[3])
-data['topic_sim1_num']=data1['topic_sim1'].apply(lambda x:x[4])
-data['topic_sim1_max1']=data1['topic_sim1'].apply(lambda x:x[5])
-data['topic_sim1_min1']=data1['topic_sim1'].apply(lambda x:x[6])
+#
+data['topic_sim0_max']=data['topic_sim0'].apply(lambda x:x[0])
+data['topic_sim0_avg']=data['topic_sim0'].apply(lambda x:x[1])
+data['topic_sim0_min']=data['topic_sim0'].apply(lambda x:x[2])
+data['topic_sim0_num']=data['topic_sim0'].apply(lambda x:x[3])
+
+data['topic_sim1_max']=data['topic_sim1'].apply(lambda x:x[0])
+data['topic_sim1_avg']=data['topic_sim1'].apply(lambda x:x[1])
+data['topic_sim1_min']=data['topic_sim1'].apply(lambda x:x[2])
+data['topic_sim1_num']=data['topic_sim1'].apply(lambda x:x[3])
+
+# data['topic_sim0_max']=data['topic_sim0'].apply(lambda x:x[0])
+# data['topic_sim0_avg']=data['topic_sim0'].apply(lambda x:x[1])
+# data['topic_sim0_min']=data['topic_sim0'].apply(lambda x:x[2])
+# data['topic_sim0_std']=data['topic_sim0'].apply(lambda x:x[3])
+# data['topic_sim0_num']=data['topic_sim0'].apply(lambda x:x[4])
+#
+# data['topic_sim1_max']=data['topic_sim1'].apply(lambda x:x[0])
+# data['topic_sim1_avg']=data['topic_sim1'].apply(lambda x:x[1])
+# data['topic_sim1_min']=data['topic_sim1'].apply(lambda x:x[2])
+# data['topic_sim1_std']=data['topic_sim1'].apply(lambda x:x[3])
+# data['topic_sim1_num']=data['topic_sim1'].apply(lambda x:x[4])
+# data['topic_sim1_max1']=data['topic_sim1'].apply(lambda x:x[5])
+# data['topic_sim1_min1']=data['topic_sim1'].apply(lambda x:x[6])
+#
 
 
+data=data.drop(['topic_sim0','topic_sim1'],axis=1)
+
+
+# data['topic_sim0_max']=fill_null_nan()
+# data['topic_sim0_avg']=data['topic_sim0'].apply(lambda x:x[1])
+# data['topic_sim0_min']=data['topic_sim0'].apply(lambda x:x[2])
+# data['topic_sim0_num']=data['topic_sim0'].apply(lambda x:x[3])
+#
+# data['topic_sim1_max']=data['topic_sim1'].apply(lambda x:x[0])
+# data['topic_sim1_avg']=data['topic_sim1'].apply(lambda x:x[1])
+# data['topic_sim1_min']=data['topic_sim1'].apply(lambda x:x[2])
+# data['topic_sim1_num']=data['topic_sim1'].apply(lambda x:x[3])
 
 fill_null(data, 'topic_sim0_max', -2)
 fill_null(data, 'topic_sim0_avg', -2)
 fill_null(data, 'topic_sim0_min', -2)
-fill_null(data, 'topic_sim0_std', -2)
+# fill_null(data, 'topic_sim0_std', -2)
 fill_null(data, 'topic_sim0_num', -2)
+
 fill_null(data, 'topic_sim1_max', -2)
 fill_null(data, 'topic_sim1_avg', -2)
 fill_null(data, 'topic_sim1_min', -2)
-fill_null(data, 'topic_sim1_std', -2)
+# fill_null(data, 'topic_sim1_std', -2)
 fill_null(data, 'topic_sim1_num', -2)
-fill_null(data, 'topic_sim1_max1', -2)
-fill_null(data, 'topic_sim1_min1', -2)
+# fill_null(data, 'topic_sim1_max1', -2)
+# fill_null(data, 'topic_sim1_min1', -2)
 
-
-data=data.drop(['follow_topic','inter_topic','topic','title_t1','title_t2','desc_t1','desc_t2'],axis=1)
+print(data.head())
 
 
 print(len(data)-1141683)
-
-
-# X = data[:2593669].drop(['label'], axis=1).values
-X = data.drop(['label'], axis=1).values
-print("load model from file")
-loaded_model1 = pickle.load(open("model_xgboost1.pickle.dat", "rb"))
-total_xg_pred1 = loaded_model1.predict_proba(X)
-loaded_model2 = pickle.load(open("model_xgboost3.pickle.dat", "rb"))
-total_xg_pred2 = loaded_model2.predict_proba(X)
-loaded_model3 = pickle.load(open("model_xgboost5.pickle.dat", "rb"))
-total_xg_pred3 = loaded_model3.predict_proba(X)
-total_xg_pred_1 = pd.DataFrame(total_xg_pred1[:,1],columns=['xg_pred1'])
-total_xg_pred_2 = pd.DataFrame(total_xg_pred2[:,1],columns=['xg_pred2'])
-total_xg_pred_3 = pd.DataFrame(total_xg_pred3[:,1],columns=['xg_pred3'])
-
-data = pd.concat([data,total_xg_pred_1],axis=1)
-data = pd.concat([data,total_xg_pred_2],axis=1)
-data = pd.concat([data,total_xg_pred_3],axis=1)
-print(data.head())
-
-print("start lgb merge")
-loaded_model_bgm1 = pickle.load(open("LGBMClassifier2.pickle.dat", "rb"))
-total_bgm_pred1 = loaded_model_bgm1.predict_proba(X)
-loaded_model_bgm2 = pickle.load(open("LGBMClassifier4.pickle.dat", "rb"))
-total_bgm_pred2 = loaded_model_bgm2.predict_proba(X)
-total_bgm_pred_1 = pd.DataFrame(total_bgm_pred1[:,1],columns=['bgm_pred1'])
-total_bgm_pred_2 = pd.DataFrame(total_bgm_pred2[:,1],columns=['bgm_pred2'])
-data = pd.concat([data,total_bgm_pred_1],axis=1)
-data = pd.concat([data,total_bgm_pred_2],axis=1)
-print(data.head())
-
-
 
 
 from lightgbm import LGBMClassifier
@@ -137,12 +123,54 @@ from lightgbm import LGBMClassifier
 
 from sklearn.model_selection import StratifiedKFold
 
+###add start
+X_evaluate = data[2593669:].drop(['label'], axis=1).values
+y_pred = np.zeros([X_evaluate.shape[0],2])
+
+loaded_model1 = pickle.load(open("model_xgboost1.pickle.dat", "rb"))
+total_xg_pred1 = loaded_model1.predict_proba(X_evaluate)
+print("total_xg_pred1",total_xg_pred1[:5,:])
+
+loaded_model2 = pickle.load(open("model_xgboost3.pickle.dat", "rb"))
+total_xg_pred2 = loaded_model2.predict_proba(X_evaluate)
+print("total_xg_pred1",total_xg_pred2[:5,:])
+
+loaded_model3 = pickle.load(open("model_xgboost5.pickle.dat", "rb"))
+total_xg_pred3 = loaded_model3.predict_proba(X_evaluate)
+print("total_xg_pred1",total_xg_pred3[:5,:])
+
+
+loaded_model_bgm1 = pickle.load(open("LGBMClassifier2.pickle.dat", "rb"))
+total_bgm_pred1 = loaded_model_bgm1.predict_proba(X_evaluate)
+print("total_xg_pred1",total_bgm_pred1[:5,:])
+
+loaded_model_bgm2 = pickle.load(open("LGBMClassifier4.pickle.dat", "rb"))
+total_bgm_pred2 = loaded_model_bgm2.predict_proba(X_evaluate)
+print("total_xg_pred1",total_bgm_pred2[:5,:])
+
+y_pred = (total_xg_pred1 + total_xg_pred2 + total_xg_pred3 +total_bgm_pred1 + total_bgm_pred2)/5
+
+print("y_pred")
+print(y_pred[:5,:])
+
+with open('test1.pkl', 'rb') as file:
+    result_append = pickle.load(file)
+
+print(data[2593669:].head())
+
+result_append['Score'] = y_pred[:, 1]
+
+print(result_append.head())
+
+result_append.to_csv('result1210.txt', header=False, index=False, sep='\t')
+
+
+'''
 n_fold = 5
 skf = StratifiedKFold(n_splits=n_fold, random_state=2020, shuffle=False)
 X_evaluate = data[2593669:].drop(['label'], axis=1).values
 y_pred = np.zeros([X_evaluate.shape[0],2])
 cnt = 1
-
 
 for index ,(train_index,test_index) in enumerate(skf.split(X , y)): #训练数据五折
     print("start train time = {cnt}".format(cnt=cnt))
@@ -150,7 +178,7 @@ for index ,(train_index,test_index) in enumerate(skf.split(X , y)): #训练数�
     print("train_index_% = ", len(train_index)/len(X))
     train_x, test_x, train_y, test_y = X[train_index], X[test_index], y[
         train_index], y[test_index]
-    print("start training")
+    print("start train")
     if cnt%2 != 0:
         print("model_xgboost")
         model = XGBClassifier(
@@ -179,7 +207,7 @@ for index ,(train_index,test_index) in enumerate(skf.split(X , y)): #训练数�
                           # categorical_feature=[15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29],
                           early_stopping_rounds=50)
         print("save {} model!!!".format(cnt))
-        pickle.dump(model, open("mydata_model_xgboost{}.pickle.dat".format(cnt), "wb"))
+        pickle.dump(model, open("model_xgboost{}.pickle.dat".format(cnt), "wb"))
     else:
         print("LGBMClassifier")
         model = LGBMClassifier(boosting_type='gbdt',
@@ -203,7 +231,7 @@ for index ,(train_index,test_index) in enumerate(skf.split(X , y)): #训练数�
                                reg_alpha=3,
                                reg_lambda=5,
                                seed=1000,
-                               n_jobs=-1,
+                               n_jobs=4,
                                silent=True
                                )
         # 建议使用CV的方式训练预测。
@@ -215,7 +243,7 @@ for index ,(train_index,test_index) in enumerate(skf.split(X , y)): #训练数�
                   # categorical_feature=[15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29],
                   early_stopping_rounds=50)
         print("save {} model!!!".format(cnt))
-        pickle.dump(model, open("mydata_LGBMClassifier{}.pickle.dat".format(cnt), "wb"))
+        pickle.dump(model, open("LGBMClassifier{}.pickle.dat".format(cnt), "wb"))
 
     gc.collect()  # 垃圾清理，内存清理
 
@@ -233,7 +261,7 @@ for index ,(train_index,test_index) in enumerate(skf.split(X , y)): #训练数�
 
 y_pred = y_pred/n_fold
 
-
+'''
 # print("start xgboost")
 # model_xgboost = XGBClassifier(
 #                       max_depth=10,
@@ -281,7 +309,7 @@ y_pred = y_pred/n_fold
 # print(y_pred[:5,:])
 #
 
-
+'''
 test = pd.read_csv('./invite_info_evaluate_1_0926.txt', header=None, sep='\t')
 test.columns = ['问题id', '用户id', '邀请创建时间']
 print(len(test))
@@ -289,5 +317,5 @@ print(len(test))
 result_append = test[['问题id', '用户id', '邀请创建时间']]
 result_append['Score'] = y_pred[:, 1]
 print(result_append.head())
-result_append.to_csv('my_data_result_xg_lg.txt', header=False, index=False, sep='\t')
-
+result_append.to_csv('result_xg_lg.txt', header=False, index=False, sep='\t')
+'''
